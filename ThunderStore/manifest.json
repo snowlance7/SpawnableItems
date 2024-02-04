@@ -1,0 +1,9 @@
+{
+  "name": "SpawnableItems",
+  "version_number": "1.0.0",
+  "website_url": "https://github.com/snowlance7/SpawnableItems",
+  "description": "Allows you to spawn non-scrap items in the dungeon. Configurable.",
+  "dependencies": [
+    "BepInEx-BepInExPack-5.4.2100"
+  ]
+}
