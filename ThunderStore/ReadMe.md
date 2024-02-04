@@ -24,7 +24,7 @@ Based on Spawnable_Store_Items by Ozone: https://thunderstore.io/c/lethal-compan
 *No known issues at this time. Should you encounter any problems, please feel free to report them on the github. Or dont i dont care.*
 
 ## Planned Features
-I plan to add custom item spawns for each moon.
+I plan to add custom item spawns for each moon and special items like shotguns and monster drops.
 
 ## Feedback
 If you have any feedback or suggestions, please feel free to not contact me, im antisocial.

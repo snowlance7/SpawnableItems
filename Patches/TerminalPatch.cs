@@ -3,11 +3,8 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using SpawnableItems;
 using Unity.Netcode;
+using UnityEngine;
 
 namespace SpawnableItems
 {
@@ -16,37 +13,76 @@ namespace SpawnableItems
     {
         private static readonly ManualLogSource LoggerInstance = SpawnableItemsBase.LoggerInstance;
 
+        public static List<SpawnableItemWithRarity> nonScrapItems;
+
+        private static List<SpawnableItemWithRarity> GetDefaultSpawnableItems()
+        {
+            throw new NotImplementedException();
+        }
+
+        private static string GetSpawnableItemsAsString()
+        {
+            throw new NotImplementedException();
+            string result = "";
+
+            LoggerInstance.LogInfo($"Getting all non scrap items...");
+            List<SpawnableItemWithRarity> nonScrapItems = StartOfRound.Instance.allItemsList.itemsList.Where((Item item) => !item.isScrap && (bool)item.spawnPrefab).Select(ItemQualifies).ToList();
+            LoggerInstance.LogDebug($"Got {nonScrapItems.Count} non scrap items...");
+            foreach (SpawnableItemWithRarity item in nonScrapItems)
+            {
+                LoggerInstance.LogDebug(item.spawnableItem.itemName);
+            }
+        }
+
         [HarmonyPatch(typeof(Terminal), "Awake")]
         [HarmonyPostfix]
-        private static void GetItems(Terminal __instance)
+        private static void TerminalAwakePostFix() // TO DO: modify to get shotgun and ammo objects as well
         {
+            //nonScrapItems = StartOfRound.Instance.allItemsList.itemsList.Where((Item item) => !item.isScrap && (bool)item.spawnPrefab).Select(ItemQualifies).ToList();
+
+            /*if (SpawnableItemsBase.configItemsToSpawn.Value == null)
+            {
+                LoggerInstance.LogWarning("configItemsToSpawn is null. Setting to default.");
+                SpawnableItemsBase.configItemsToSpawn = SpawnableItemsBase.Instance.Config.Bind("General", "ItemsToSpawn", GetDefaultSpawnableItems(), $"Items to spawn with their rarity.\n{GetSpawnableItemsAsString()}");
+            }*/ //brain not working WHAT DOES THIS DO???????
+
             // my method
-            LoggerInstance.LogInfo($"Getting buyable items...");
+            /*LoggerInstance.LogInfo($"Getting buyable items...");
             List<Item> buyableItems = __instance.buyableItemsList.ToList();
             LoggerInstance.LogDebug($"Got {buyableItems.Count} buyable items...");
 
             foreach (Item item in buyableItems)
             {
                 LoggerInstance.LogDebug(item.itemName);
-            }
+            }*/
 
             // other method
-            LoggerInstance.LogInfo($"Getting all non scrap items...");
-            List<SpawnableItemWithRarity> nonScrapItems = StartOfRound.Instance.allItemsList.itemsList.Where((Item item) => !item.isScrap && (bool)item.spawnPrefab).Select(SetSpawnableItemWithRarity).ToList();
+            /*LoggerInstance.LogInfo($"Getting all non scrap items...");
+            List<SpawnableItemWithRarity> nonScrapItems = StartOfRound.Instance.allItemsList.itemsList.Where((Item item) => !item.isScrap && (bool)item.spawnPrefab).Select(ItemQualifies).ToList();
             LoggerInstance.LogDebug($"Got {nonScrapItems.Count} non scrap items...");
             foreach (SpawnableItemWithRarity item in nonScrapItems)
             {
                 LoggerInstance.LogDebug(item.spawnableItem.itemName);
-            }
+            }*/
 
-            LoggerInstance.LogInfo($"Getting all items...");
-            List<SpawnableItemWithRarity> allItems = StartOfRound.Instance.allItemsList.itemsList.Select(SetSpawnableItemWithRarity).ToList();
+            // Get all items
+            /*LoggerInstance.LogInfo($"Getting all items...");
+            List<SpawnableItemWithRarity> allItems = StartOfRound.Instance.allItemsList.itemsList.Select(ItemQualifies).ToList();
             LoggerInstance.LogDebug($"Got {allItems.Count} items...");
             foreach (SpawnableItemWithRarity item in allItems)
             {
-                LoggerInstance.LogDebug(item.spawnableItem.itemName + " " + item.rarity);
+                LoggerInstance.LogDebug(item.spawnableItem.itemName + " " + item.spawnableItem.itemSpawnsOnGround);
+            }*/ 
+
+            LoggerInstance.LogInfo($"Getting all items RAW...");
+            List<Item> allItems = StartOfRound.Instance.allItemsList.itemsList;
+            LoggerInstance.LogDebug($"Got {allItems.Count} RAW items...");
+            foreach (Item item in allItems)
+            {
+                LoggerInstance.LogDebug(item.itemName + " " + item.isDefensiveWeapon); // THIS WORKS, USE THIS TO GET SHOTGUN AND AMMO
             }
 
+            // Advanced Company method? TO DO: check if this works
             /*for (int k = 0; k < Terminal.terminalNodes.allKeywords.Length; k++)
             {
                 TerminalKeyword keyword = Terminal.terminalNodes.allKeywords[k];
@@ -116,8 +152,8 @@ namespace SpawnableItems
         [HarmonyPostfix]
         public static void SpawnStoreItemsInsideFactory(RoundManager __instance)
         {
-            return; // temporary
-            SpawnableItemWithRarity[] array = StartOfRound.Instance.allItemsList.itemsList.Where((Item item) => !item.isScrap && (bool)item.spawnPrefab).Select(SetSpawnableItemWithRarity).ToArray();
+            return; // remove this line when implementing the patch
+            SpawnableItemWithRarity[] array = StartOfRound.Instance.allItemsList.itemsList.Where((Item item) => !item.isScrap && (bool)item.spawnPrefab).Select(ItemQualifies).ToArray();
             int[] weights = array.Select((SpawnableItemWithRarity f) => f.rarity).ToArray();
             List<RandomScrapSpawn> list = (from s in UnityEngine.Object.FindObjectsOfType<RandomScrapSpawn>()
                                            where !s.spawnUsed
@@ -148,8 +184,13 @@ namespace SpawnableItems
             }
         }
 
-        private static SpawnableItemWithRarity SetSpawnableItemWithRarity(Item item)
+        private static SpawnableItemWithRarity ItemQualifies(Item item) // TO DO: main function is to convert item to spawnableitemwithrarity
         {
+            /*if (true) // check if items are mapper, key, shotgun, ammo, or other special items
+            {
+
+            }*/
+
             // temporary test
             SpawnableItemWithRarity spawnableItemWithRarity = new SpawnableItemWithRarity
             {
