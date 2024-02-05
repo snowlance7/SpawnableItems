@@ -1,7 +1,7 @@
 ﻿using BepInEx.Logging;
 using HarmonyLib;
 using System;
-using System.Collections.Generic;
+/*using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,7 +9,7 @@ using UnityEngine;
 using SpawnableItems;
 using Unity.Netcode;
 
-namespace SpawnableItems.Patches
+namespace SpawnableItems.Patches // TODO: Remove this file if you don't need it
 {
     [HarmonyPatch]
     internal class RoundManagerPatch
@@ -49,3 +49,4 @@ namespace SpawnableItems.Patches
         }
     }
 }
+*/

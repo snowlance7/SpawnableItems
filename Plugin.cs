@@ -38,7 +38,7 @@ namespace SpawnableItems
             //configItemsToSpawn = Config.Bind("General", "ItemsToSpawn", "", "Items to spawn with their rarity.\nIMPORTANT: This will fill with all items when the terminal is loaded in the game. Run the game first and load into a lobby to get string and edit it here.\nFormat: ItemName:Rarity,ItemName:Rarity,ItemName:Rarity\nExample: Shotgun:1,YieldSign:2,Shells:3");
             configIncludeDefensiveItems = Config.Bind("General", "IncludeDefensiveItems", true, "Should defensive items be included in the item spawning?\nYield Sign, Shotgun, Shells, etc.");
             
-            // TO DO: set configitemstospawn based on level/moon
+            // TODO: set configitemstospawn based on level/moon
             
             harmony.PatchAll();
         }
