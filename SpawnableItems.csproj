@@ -40,12 +40,6 @@
     <Reference Include="BepInEx">
       <HintPath>..\..\..\OneDrive\Documents\Modding\Lethal Company Debugging\BepInEx\core\BepInEx.dll</HintPath>
     </Reference>
-    <Reference Include="LethalNetworkAPI">
-      <HintPath>..\1Resources\1Dependencies\LethalNetworkAPI.dll</HintPath>
-    </Reference>
-    <Reference Include="OdinSerializer">
-      <HintPath>..\1Resources\1Dependencies\OdinSerializer.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
