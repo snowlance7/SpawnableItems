@@ -1,4 +1,5 @@
 ﻿using BepInEx.Logging;
+using GameNetcodeStuff;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -27,7 +28,7 @@ namespace SpawnableItems
                 //throw new NotImplementedException(); // remove this line when implementing the patch
                 return StartOfRound.Instance.allItemsList.itemsList
                         .Where((Item item) => (!item.isScrap && (bool)item.spawnPrefab) || (SpawnableItemsBase.configIncludeDefensiveItems.Value && item.isDefensiveWeapon))            // THE HOLY GRAIL MUAH
-                        .Select(GetSpawnableItemWithRarity) //
+                        .Select(item => GetSpawnableItemWithRarity(item)) //
                         .Where(item => item != null) // Filter out null values // ERROR: MIGHT THROW AN EXCEPTION, BUT IT'S FINE FOR NOW
                         .ToList(); // WORKS!!!
             }
@@ -44,6 +45,21 @@ namespace SpawnableItems
             if (itemsToSpawn == null)
             {
                 // testing
+                string itemsString = SpawnableItemsBase.configItemsToSpawn.Value;
+                if (itemsString == "") { throw new Exception(); }
+                itemsToSpawn = new List<SpawnableItemWithRarity>();
+
+                string[] pairs = itemsString.Split(',');
+
+                foreach (string pair in pairs)
+                {
+                    string[] parts = pair.Split(':');
+                    Item tempSpawnableItem = StartOfRound.Instance.allItemsList.itemsList.Where((Item item) => item.itemName == parts[0]).First();   // TODO there may be an easier way of doing this.
+                    LoggerInstance.LogDebug($"tempSpawnableItem: {tempSpawnableItem.itemName}:{parts[1]}");
+                    itemsToSpawn.Add(GetSpawnableItemWithRarity(tempSpawnableItem, int.Parse(parts[1])));
+                }
+
+                LoggerInstance.LogDebug($"List retrieved:\n{itemsToSpawnString}"); // idea convert to array with .ToArray() and see if it shows
                 //GetDefaultItemsToSpawn();
 
 
@@ -51,7 +67,7 @@ namespace SpawnableItems
                 //return; // remove this line when implementing the patch
                 // TODO: Set rarities based on configItemsToSpawn, DO NOT bind to configItemsToSpawn
                 //throw new NotImplementedException(); // remove this line when implementing the patch
-                try
+                /*try
                 {
                     string itemsString = SpawnableItemsBase.configItemsToSpawn.Value;
                     if (itemsString == "") { throw new Exception(); }
@@ -62,7 +78,7 @@ namespace SpawnableItems
                     {
                         string[] parts = pair.Split(':');
                         Item tempSpawnableItem = StartOfRound.Instance.allItemsList.itemsList.Where((Item item) => item.itemName == parts[0]).First();   // TODO there may be an easier way of doing this.
-                        itemsToSpawn.Add(new SpawnableItemWithRarity { spawnableItem = tempSpawnableItem, rarity = int.Parse(parts[1]) });
+                        itemsToSpawn.Add(new SpawnableItemWithRarity { spawnableItem = tempSpawnableItem, rarity = int.Parse(parts[1]) }); // this is the error
                     }
 
                     LoggerInstance.LogDebug($"List retrieved:\n{itemsToSpawnString}"); // idea convert to array with .ToArray() and see if it shows
@@ -71,11 +87,12 @@ namespace SpawnableItems
                 {
 
                     LoggerInstance.LogDebug("Error parsing config string, using default values...");
+
                     if (itemsToSpawn != null) { itemsToSpawn.Clear(); LoggerInstance.LogDebug("itemsToSpawn cleared"); }
                     itemsToSpawn = GetDefaultItemsToSpawn();
                     if (SpawnableItemsBase.configItemsToSpawn.Value == "") { SpawnableItemsBase.configItemsToSpawn.Value = itemsToSpawnString; }
                     LoggerInstance.LogDebug($"Default list: {itemsToSpawnString}");
-                }
+                }*/
             }
         }
 
@@ -143,11 +160,26 @@ namespace SpawnableItems
 
         private static void SpawnItemsInLevel(RoundManager __instance)
         {
-            throw new NotImplementedException(); // remove this line when implementing the patch
+
+
+            //throw new NotImplementedException(); // remove this line when implementing the patch
             // TODO: spawn items in level, may need to rework this, check SpawnScrapInLevel in ILSpy for reference
-            /*SpawnableItemWithRarity[] array = StartOfRound.Instance.allItemsList.itemsList.Where((Item item) => !item.isScrap && (bool)item.spawnPrefab).Select(item => GetSpawnableItemWithRarity(item)).ToArray(); // TODO: REWORK THIS
+            SpawnableItemWithRarity[] array = itemsToSpawn.ToArray(); // TODO: REWORK THIS
             int[] weights = array.Select((SpawnableItemWithRarity f) => f.rarity).ToArray(); // TODO: REWORK THIS TO A LIST INSTEAD OF AN ARRAY
-            List<RandomScrapSpawn> list = (from s in UnityEngine.Object.FindObjectsOfType<RandomScrapSpawn>()
+
+            // testing TODO: remove this
+            PlayerControllerB player = StartOfRound.Instance.localPlayerController;
+            Vector3 vector = player.transform.position;
+            System.Random random = new System.Random(StartOfRound.Instance.randomMapSeed - 7);
+            // spawn item at random position
+            int randomWeightedIndex = RoundManager.Instance.GetRandomWeightedIndex(weights, random);
+            GameObject gameObject = UnityEngine.Object.Instantiate(array[randomWeightedIndex].spawnableItem.spawnPrefab, vector + Vector3.up * 0.5f, Quaternion.identity, StartOfRound.Instance.propsContainer);
+            gameObject.GetComponent<GrabbableObject>().fallTime = 0f;
+            gameObject.GetComponent<NetworkObject>().Spawn();
+            return;
+            // end testing
+
+            /*List<RandomScrapSpawn> list = (from s in UnityEngine.Object.FindObjectsOfType<RandomScrapSpawn>()
                                            where !s.spawnUsed
                                            select s).ToList();
             System.Random random = new System.Random(StartOfRound.Instance.randomMapSeed - 7);
@@ -169,6 +201,8 @@ namespace SpawnableItems
                 {
                     vector = RoundManager.Instance.GetRandomNavMeshPositionInRadiusSpherical(randomScrapSpawn.transform.position, randomScrapSpawn.itemSpawnRange, RoundManager.Instance.navHit);
                 }
+
+                // spawn item at random position
                 int randomWeightedIndex = RoundManager.Instance.GetRandomWeightedIndex(weights, random);
                 GameObject gameObject = UnityEngine.Object.Instantiate(array[randomWeightedIndex].spawnableItem.spawnPrefab, vector + Vector3.up * 0.5f, Quaternion.identity, StartOfRound.Instance.propsContainer);
                 gameObject.GetComponent<GrabbableObject>().fallTime = 0f;
@@ -201,6 +235,20 @@ namespace SpawnableItems
             {
                 rarity = 1,
                 spawnableItem = item
+            };
+        }
+
+        private static SpawnableItemWithRarity GetSpawnableItemWithRarity(Item _item, int _rarity) // TODO: main function is to convert item to spawnableitemwithrarity
+        {
+            //throw new NotImplementedException(); // remove this line when implementing the patch
+
+
+            LoggerInstance.LogDebug($"Setting SpawnableItemWithRarity for item {_item.itemName}:{_rarity}");
+            // temporary test
+            return new SpawnableItemWithRarity
+            {
+                rarity = _rarity,
+                spawnableItem = _item
             };
         }
     }
