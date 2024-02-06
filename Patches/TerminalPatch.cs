@@ -71,7 +71,7 @@ namespace SpawnableItems
                     itemsToSpawn = GetDefaultItemsToSpawn();
                     if (SpawnableItemsBase.configItemsToSpawn.Value == "") { SpawnableItemsBase.configItemsToSpawn.Value = itemsToSpawnString; }
                     LoggerInstance.LogDebug($"Default list: {itemsToSpawnString}");
-                }
+                }*/
             }
         }
 
