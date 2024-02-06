@@ -69,10 +69,11 @@ namespace SpawnableItems
                 }
                 catch (Exception)
                 {
+
                     LoggerInstance.LogDebug("Error parsing config string, using default values...");
-                    if (itemsToSpawn != null) { itemsToSpawn.Clear(); }
-                    LoggerInstance.LogDebug("itemsToSpawn cleared");
+                    if (itemsToSpawn != null) { itemsToSpawn.Clear(); LoggerInstance.LogDebug("itemsToSpawn cleared"); }
                     itemsToSpawn = GetDefaultItemsToSpawn();
+                    if (SpawnableItemsBase.configItemsToSpawn.Value == "") { SpawnableItemsBase.configItemsToSpawn.Value = itemsToSpawnString; }
                     LoggerInstance.LogDebug($"Default list: {itemsToSpawnString}");
                 }
             }
