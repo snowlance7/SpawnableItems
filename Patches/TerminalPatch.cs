@@ -42,11 +42,6 @@ namespace SpawnableItems
                     "\nIMPORTANT: This will fill with all items when the terminal is loaded in the game. MAKE SURE THIS IS EMPTY, run the game and load into a lobby to fill this with default values, close the game and edit it here." +
                     "\nFormat: ItemName:Rarity,ItemName:Rarity,ItemName:Rarity" +
                     "\nExample: Shotgun:1,YieldSign:2,Shells:3");
-                /*itemsToSpawn = StartOfRound.Instance.allItemsList.itemsList
-                    .Where((Item item) => (!item.isScrap && (bool)item.spawnPrefab) || (SpawnableItemsBase.configIncludeDefensiveItems.Value && item.isDefensiveWeapon))            // THE HOLY GRAIL MUAH
-                    .Select(item => GetSpawnableItemWithRarity(item, false))
-                    .Where(item => item != null) // Filter out null values // ERROR: MIGHT THROW AN EXCEPTION, BUT IT'S FINE FOR NOW
-                    .ToList();*/ // might not be needed
             }
             else
             {
@@ -88,7 +83,7 @@ namespace SpawnableItems
         public static void SpawnScrapInLevelPostFix(RoundManager __instance) // runs after the switch is pulled
         {
             throw new NotImplementedException(); // remove this line when implementing the patch
-            SpawnableItemWithRarity[] array = StartOfRound.Instance.allItemsList.itemsList.Where((Item item) => !item.isScrap && (bool)item.spawnPrefab).Select(item => GetSpawnableItemWithRarity(item, true)).ToArray();
+            /*SpawnableItemWithRarity[] array = StartOfRound.Instance.allItemsList.itemsList.Where((Item item) => !item.isScrap && (bool)item.spawnPrefab).Select(item => GetSpawnableItemWithRarity(item)).ToArray(); // TODO: rework this
             int[] weights = array.Select((SpawnableItemWithRarity f) => f.rarity).ToArray();
             List<RandomScrapSpawn> list = (from s in UnityEngine.Object.FindObjectsOfType<RandomScrapSpawn>()
                                            where !s.spawnUsed
@@ -116,14 +111,14 @@ namespace SpawnableItems
                 GameObject gameObject = UnityEngine.Object.Instantiate(array[randomWeightedIndex].spawnableItem.spawnPrefab, vector + Vector3.up * 0.5f, Quaternion.identity, StartOfRound.Instance.propsContainer);
                 gameObject.GetComponent<GrabbableObject>().fallTime = 0f;
                 gameObject.GetComponent<NetworkObject>().Spawn();
-            }
+            }*/
         }
 
         private static void SpawnItemsInLevel(RoundManager __instance)
         {
             throw new NotImplementedException(); // remove this line when implementing the patch
             // TODO: spawn items in level, may need to rework this, check SpawnScrapInLevel in ILSpy for reference
-            SpawnableItemWithRarity[] array = StartOfRound.Instance.allItemsList.itemsList.Where((Item item) => !item.isScrap && (bool)item.spawnPrefab).Select(item => GetSpawnableItemWithRarity(item, true)).ToArray(); // TODO: REWORK THIS T
+            /*SpawnableItemWithRarity[] array = StartOfRound.Instance.allItemsList.itemsList.Where((Item item) => !item.isScrap && (bool)item.spawnPrefab).Select(item => GetSpawnableItemWithRarity(item)).ToArray(); // TODO: REWORK THIS
             int[] weights = array.Select((SpawnableItemWithRarity f) => f.rarity).ToArray(); // TODO: REWORK THIS TO A LIST INSTEAD OF AN ARRAY
             List<RandomScrapSpawn> list = (from s in UnityEngine.Object.FindObjectsOfType<RandomScrapSpawn>()
                                            where !s.spawnUsed
@@ -151,7 +146,7 @@ namespace SpawnableItems
                 GameObject gameObject = UnityEngine.Object.Instantiate(array[randomWeightedIndex].spawnableItem.spawnPrefab, vector + Vector3.up * 0.5f, Quaternion.identity, StartOfRound.Instance.propsContainer);
                 gameObject.GetComponent<GrabbableObject>().fallTime = 0f;
                 gameObject.GetComponent<NetworkObject>().Spawn();
-            }
+            }*/
         }
 
         private static void GetitemsToSpawnFromConfig()  // should get items from config and set to itemsToSpawn otherwise set to defaults // idea fill a generic object class with the values and then set to itemsToSpawn with rarity values
@@ -183,13 +178,13 @@ namespace SpawnableItems
             //throw new NotImplementedException(); // remove this line when implementing the patch
             itemsToSpawn = StartOfRound.Instance.allItemsList.itemsList
                     .Where((Item item) => (!item.isScrap && (bool)item.spawnPrefab) || (SpawnableItemsBase.configIncludeDefensiveItems.Value && item.isDefensiveWeapon))            // THE HOLY GRAIL MUAH
-                    .Select(item => GetSpawnableItemWithRarity(item, true)) //
+                    .Select(item => GetSpawnableItemWithRarity(item)) //
                     .Where(item => item != null) // Filter out null values // ERROR: MIGHT THROW AN EXCEPTION, BUT IT'S FINE FOR NOW
                     .ToList(); // WORKS!!!
             // TODO: set to default values, should calculate rarity based on price or value, otherwise set to average of all item rarities in that level
         }   
 
-        private static SpawnableItemWithRarity GetSpawnableItemWithRarity(Item item, bool setDefaults) // TODO: main function is to convert item to spawnableitemwithrarity
+        private static SpawnableItemWithRarity GetSpawnableItemWithRarity(Item item) // TODO: main function is to convert item to spawnableitemwithrarity
         {
             //throw new NotImplementedException(); // remove this line when implementing the patch
             LoggerInstance.LogDebug($"Setting SpawnableItemWithRarity for item {item.itemName}");
