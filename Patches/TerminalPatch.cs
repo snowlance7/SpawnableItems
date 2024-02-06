@@ -15,40 +15,66 @@ namespace SpawnableItems
         private static SpawnableItemsBase Instance = SpawnableItemsBase.Instance;
         private static readonly ManualLogSource LoggerInstance = SpawnableItemsBase.LoggerInstance;
 
-        public static List<SpawnableItemWithRarity> itemsToSpawn;
-        public static string itemsToSpawnString { get { return string.Join(",", itemsToSpawn.Select((SpawnableItemWithRarity itemWithRarity) => $"{itemWithRarity.spawnableItem.itemName}:{itemWithRarity.rarity}")); } } // itemsToSpawn should not be null TODO: add null handling
+        private static List<SpawnableItemWithRarity> defaultItemsToSpawn;
+        private static List<SpawnableItemWithRarity> itemsToSpawn;
+        private static string defaultItemsToSpawnString { get { return string.Join(",", GetDefaultItemsToSpawn().Select((SpawnableItemWithRarity itemWithRarity) => $"{itemWithRarity.spawnableItem.itemName}:{itemWithRarity.rarity}")); } } // defaultItemsToSpawn should not be null TODO: add null handling TODO: REMOVE \n
+        private static string itemsToSpawnString { get { return string.Join(",", itemsToSpawn.Select((SpawnableItemWithRarity itemWithRarity) => $"{itemWithRarity.spawnableItem.itemName}:{itemWithRarity.rarity}")); } } // itemsToSpawn should not be null TODO: add null handling TODO: REMOVE \n
 
-        /*private static List<SpawnableItemWithRarity> GetDefaultSpawnableItems()
+        private static List<SpawnableItemWithRarity> GetDefaultItemsToSpawn()
         {
-            
-        }*/ // might not be needed
+            if (defaultItemsToSpawn == null)
+            {
+                //throw new NotImplementedException(); // remove this line when implementing the patch
+                return StartOfRound.Instance.allItemsList.itemsList
+                        .Where((Item item) => (!item.isScrap && (bool)item.spawnPrefab) || (SpawnableItemsBase.configIncludeDefensiveItems.Value && item.isDefensiveWeapon))            // THE HOLY GRAIL MUAH
+                        .Select(GetSpawnableItemWithRarity) //
+                        .Where(item => item != null) // Filter out null values // ERROR: MIGHT THROW AN EXCEPTION, BUT IT'S FINE FOR NOW
+                        .ToList(); // WORKS!!!
+            }
+            else
+            {
+                return defaultItemsToSpawn;
+            }
+        }
 
         [HarmonyPatch(typeof(Terminal), "Awake")]
         [HarmonyPostfix]
         private static void TerminalAwakePostFix() // runs when terminal is awake
         {
-            // testing
-            //SetDefaultItemsToSpawn();
-
-            // if configItemsToSpawn is null, set to default values
-            if (SpawnableItemsBase.configItemsToSpawn == null)
+            if (itemsToSpawn == null)
             {
-                LoggerInstance.LogDebug("configItemsToSpawn is null. Setting to default.");
-                //return; // remove this line when implementing the patch
+                // testing
+                //GetDefaultItemsToSpawn();
 
-                SetDefaultItemsToSpawn();
-                
-                SpawnableItemsBase.configItemsToSpawn = Instance.Config.Bind("General", "ItemsToSpawn", itemsToSpawnString, "Items to spawn with their rarity." +
-                    "\nIMPORTANT: This will fill with all items when the terminal is loaded in the game. MAKE SURE THIS IS EMPTY, run the game and load into a lobby to fill this with default values, close the game and edit it here." +
-                    "\nFormat: ItemName:Rarity,ItemName:Rarity,ItemName:Rarity" +
-                    "\nExample: Shotgun:1,YieldSign:2,Shells:3");
-            }
-            else
-            {
-                LoggerInstance.LogDebug("configItemsToSpawn is not null. Setting to config value.");
+
+                //LoggerInstance.LogDebug("configItemsToSpawn is not null. Setting to config values.");
                 //return; // remove this line when implementing the patch
                 // TODO: Set rarities based on configItemsToSpawn, DO NOT bind to configItemsToSpawn
-                GetitemsToSpawnFromConfig();
+                //throw new NotImplementedException(); // remove this line when implementing the patch
+                try
+                {
+                    string itemsString = SpawnableItemsBase.configItemsToSpawn.Value;
+                    if (itemsString == "") { throw new Exception(); }
+
+                    string[] pairs = itemsString.Split(',');
+
+                    foreach (string pair in pairs)
+                    {
+                        string[] parts = pair.Split(':');
+                        Item tempSpawnableItem = StartOfRound.Instance.allItemsList.itemsList.Where((Item item) => item.itemName == parts[0]).First();   // TODO there may be an easier way of doing this.
+                        itemsToSpawn.Add(new SpawnableItemWithRarity { spawnableItem = tempSpawnableItem, rarity = int.Parse(parts[1]) });
+                    }
+
+                    LoggerInstance.LogDebug($"List retrieved:\n{itemsToSpawnString}"); // idea convert to array with .ToArray() and see if it shows
+                }
+                catch (Exception)
+                {
+                    LoggerInstance.LogDebug("Error parsing config string, using default values...");
+                    if (itemsToSpawn != null) { itemsToSpawn.Clear(); }
+                    LoggerInstance.LogDebug("itemsToSpawn cleared");
+                    itemsToSpawn = GetDefaultItemsToSpawn();
+                    LoggerInstance.LogDebug($"Default list: {itemsToSpawnString}");
+                }
             }
         }
 
@@ -149,51 +175,16 @@ namespace SpawnableItems
             }*/
         }
 
-        private static void GetitemsToSpawnFromConfig()  // should get items from config and set to itemsToSpawn otherwise set to defaults // idea fill a generic object class with the values and then set to itemsToSpawn with rarity values
-        {
-            //throw new NotImplementedException(); // remove this line when implementing the patch
-            try
-            {
-                string itemsString = SpawnableItemsBase.configItemsToSpawn.Value.Replace(" ", "");
-                itemsToSpawn = itemsString.Split(',')
-                    .Select(itemString =>
-                    {
-                        var parts = itemString.Split(':');
-                        Item tempSpawnableItem = StartOfRound.Instance.allItemsList.itemsList.Where((Item item) => item.itemName == parts[0]).First();   // TODO there may be an easier way of doing this.
-                        return new SpawnableItemWithRarity { spawnableItem = tempSpawnableItem, rarity = int.Parse(parts[1]) };
-                    })
-                    .ToList();  // ERROR TODO might throw an exception, but it's fine for now
-                LoggerInstance.LogDebug($"List retrieved:\n{itemsToSpawn}"); // idea convert to array with .ToArray() and see if it shows
-            }
-            catch (Exception)
-            {
-                LoggerInstance.LogError("Error parsing config string, using default values...");
-                itemsToSpawn.Clear();
-                SetDefaultItemsToSpawn();
-            }
-        } 
-
-        private static void SetDefaultItemsToSpawn()
-        {
-            //throw new NotImplementedException(); // remove this line when implementing the patch
-            itemsToSpawn = StartOfRound.Instance.allItemsList.itemsList
-                    .Where((Item item) => (!item.isScrap && (bool)item.spawnPrefab) || (SpawnableItemsBase.configIncludeDefensiveItems.Value && item.isDefensiveWeapon))            // THE HOLY GRAIL MUAH
-                    .Select(item => GetSpawnableItemWithRarity(item)) //
-                    .Where(item => item != null) // Filter out null values // ERROR: MIGHT THROW AN EXCEPTION, BUT IT'S FINE FOR NOW
-                    .ToList(); // WORKS!!!
-            // TODO: set to default values, should calculate rarity based on price or value, otherwise set to average of all item rarities in that level
-        }   
-
         private static SpawnableItemWithRarity GetSpawnableItemWithRarity(Item item) // TODO: main function is to convert item to spawnableitemwithrarity
         {
             //throw new NotImplementedException(); // remove this line when implementing the patch
-            LoggerInstance.LogDebug($"Setting SpawnableItemWithRarity for item {item.itemName}");
             
             if (item.itemName == "Mapper" || item.itemName == "Binoculars" || item.itemName == "Key" ) // check if items are mapper or binoculars
             {
                 return null; // ERROR Might throw an exception, but it's fine for now
             }
-            
+
+            LoggerInstance.LogDebug($"Setting SpawnableItemWithRarity for item {item.itemName}");
             // temporary test
             return new SpawnableItemWithRarity
             {
