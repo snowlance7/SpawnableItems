@@ -2,6 +2,7 @@
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
@@ -106,6 +107,7 @@ namespace SpawnableItems
 
             if (SpawnableItemsBase.configItemSpawnSequence.Value == "WithScrap" || SpawnableItemsBase.configMaxItemsToSpawn.Value == -1)
             {
+                // TODO ERROR: minmax arguement out of range exception
                 // add items to spawnablescrap
                 __instance.currentLevel.spawnableScrap.AddRange(itemsToSpawn);
             }
@@ -133,9 +135,11 @@ namespace SpawnableItems
 
         private static void SpawnItemsInLevel()
         {
+
+            // TODO ERROR: minmax arguement out of range exception
             try
             {
-                if (SpawnableItemsBase.configMaxItemsToSpawn.Value == -1 && SpawnableItemsBase.configItemSpawnSequence.Value != "WithScrap")
+                if (SpawnableItemsBase.configMaxItemsToSpawn.Value != -1 && SpawnableItemsBase.configItemSpawnSequence.Value != "WithScrap")
                 {
                     SpawnableItemWithRarity[] array = itemsToSpawn.ToArray();
                     int[] weights = array.Select((SpawnableItemWithRarity f) => f.rarity).ToArray();
@@ -144,7 +148,7 @@ namespace SpawnableItems
                                                    where !s.spawnUsed
                                                    select s).ToList();
                     System.Random random = new System.Random(StartOfRound.Instance.randomMapSeed - 7);
-                    int num = random.Next(SpawnableItemsBase.configMinItemsToSpawn.Value, SpawnableItemsBase.configMaxItemsToSpawn.Value);
+                    int num = random.Next(SpawnableItemsBase.configMinItemsToSpawn.Value, SpawnableItemsBase.configMaxItemsToSpawn.Value); // ERROR: 
                     LoggerInstance.LogDebug($"Spawning {num} items in level");
                     for (int i = 0; i < num; i++) // spawn items in level based on config for min and max items to spawn
                     {
@@ -165,7 +169,7 @@ namespace SpawnableItems
                         }
                         // spawn item at random position
                         int randomWeightedIndex = RoundManager.Instance.GetRandomWeightedIndex(weights, random);
-                        GameObject gameObject = UnityEngine.Object.Instantiate(array[randomWeightedIndex].spawnableItem.spawnPrefab, vector + Vector3.up * 0.5f, Quaternion.identity, StartOfRound.Instance.propsContainer);
+                        GameObject gameObject = UnityEngine.Object.Instantiate(array[randomWeightedIndex].spawnableItem.spawnPrefab, vector + Vector3.up * 0.5f, Quaternion.identity, StartOfRound.Instance.propsContainer); // TODO: ERROR IS HERE
                         gameObject.GetComponent<GrabbableObject>().fallTime = 0f;
                         gameObject.GetComponent<NetworkObject>().Spawn();
                     }
