@@ -71,7 +71,7 @@ namespace SpawnableItems
                     itemsToSpawn = GetDefaultItemsToSpawn();
                     if (SpawnableItemsBase.configItemsToSpawn.Value == "") { SpawnableItemsBase.configItemsToSpawn.Value = itemsToSpawnString; }
                     LoggerInstance.LogDebug($"Default list: {itemsToSpawnString}");
-                }*/
+                }
             }
         }
 
@@ -105,7 +105,9 @@ namespace SpawnableItems
         [HarmonyPostfix]
         public static void SpawnScrapInLevelPostFix(RoundManager __instance) // runs after the switch is pulled
         {
-            throw new NotImplementedException(); // remove this line when implementing the patch
+            SpawnItemsInLevel(__instance);
+            return; // remove this line when implementing the patch
+            //throw new NotImplementedException(); // remove this line when implementing the patch
             /*SpawnableItemWithRarity[] array = StartOfRound.Instance.allItemsList.itemsList.Where((Item item) => !item.isScrap && (bool)item.spawnPrefab).Select(item => GetSpawnableItemWithRarity(item)).ToArray(); // TODO: rework this
             int[] weights = array.Select((SpawnableItemWithRarity f) => f.rarity).ToArray();
             List<RandomScrapSpawn> list = (from s in UnityEngine.Object.FindObjectsOfType<RandomScrapSpawn>()
