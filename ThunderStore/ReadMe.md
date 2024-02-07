@@ -21,13 +21,13 @@ Not compatible with potatoes.
 Based on Spawnable_Store_Items by Ozone: https://thunderstore.io/c/lethal-company/p/Ozone/Spawnable_Store_Items/
 
 ## Known Issues
-*No known issues at this time. Should you encounter any problems, please feel free to report them on the github. Or dont i dont care.*
+*No known issues at this time. Should you encounter any problems, please feel free to report them on github. Or dont i dont care.*
 
 ## Planned Features
-I plan to add custom item spawns for each moon and special items like shotguns and monster drops.
+I plan to add custom item spawns for each moon and special items.
 
 ## Feedback
-If you have any feedback or suggestions, please feel free to not contact me, im antisocial.
+If you have any feedback or suggestions, please feel free to not contact me, im antisocial. (I go by Snowy on discord)
 
 ---
 

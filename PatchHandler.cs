@@ -100,16 +100,15 @@ namespace SpawnableItems
         [HarmonyPrefix]
         private static void SpawnScrapInLevelPreFix(RoundManager __instance) // runs before scrap is spawned
         {
-            if (!SpawnableItemsBase.configShouldScrapSpawn.Value) // if configShouldScrapSpawn is false, clear the spawnablescrap list
+            if (!SpawnableItemsBase.configShouldScrapSpawn.Value) // if configShouldScrapSpawn is false, clear the spawnablescrap list TODO should default to WithScrap
             {
                 __instance.currentLevel.spawnableScrap.Clear();
             }
-
-            if (SpawnableItemsBase.configItemSpawnSequence.Value == "WithScrap" || SpawnableItemsBase.configMaxItemsToSpawn.Value == -1)
+            if (SpawnableItemsBase.configItemSpawnSequence.Value == "WithScrap" || SpawnableItemsBase.configMaxItemsToSpawn.Value == -1 || !SpawnableItemsBase.configShouldScrapSpawn.Value)
             {
+                __instance.currentLevel.spawnableScrap.AddRange(itemsToSpawn);
                 // TODO ERROR: minmax arguement out of range exception
                 // add items to spawnablescrap
-                __instance.currentLevel.spawnableScrap.AddRange(itemsToSpawn);
             }
             else if (SpawnableItemsBase.configItemSpawnSequence.Value == "BeforeScrap")
             {
@@ -127,7 +126,7 @@ namespace SpawnableItems
         [HarmonyPostfix]
         public static void SpawnScrapInLevelPostFix() // runs after scrap is spawned
         {
-            if (SpawnableItemsBase.configItemSpawnSequence.Value == "AfterScrap" && SpawnableItemsBase.configMaxItemsToSpawn.Value != -1)
+            if (SpawnableItemsBase.configItemSpawnSequence.Value == "AfterScrap")
             {
                 SpawnItemsInLevel();
             }
@@ -139,7 +138,7 @@ namespace SpawnableItems
             // TODO ERROR: minmax arguement out of range exception
             try
             {
-                if (SpawnableItemsBase.configMaxItemsToSpawn.Value != -1 && SpawnableItemsBase.configItemSpawnSequence.Value != "WithScrap")
+                if (SpawnableItemsBase.configMaxItemsToSpawn.Value != -1 && SpawnableItemsBase.configItemSpawnSequence.Value != "WithScrap" && SpawnableItemsBase.configShouldScrapSpawn.Value)
                 {
                     SpawnableItemWithRarity[] array = itemsToSpawn.ToArray();
                     int[] weights = array.Select((SpawnableItemWithRarity f) => f.rarity).ToArray();
@@ -148,7 +147,7 @@ namespace SpawnableItems
                                                    where !s.spawnUsed
                                                    select s).ToList();
                     System.Random random = new System.Random(StartOfRound.Instance.randomMapSeed - 7);
-                    int num = random.Next(SpawnableItemsBase.configMinItemsToSpawn.Value, SpawnableItemsBase.configMaxItemsToSpawn.Value); // ERROR: 
+                    int num = random.Next(SpawnableItemsBase.configMinItemsToSpawn.Value, SpawnableItemsBase.configMaxItemsToSpawn.Value); // ERROR IS NOT HAPPENING HERE, ITS OUT OF THE SCOPE 
                     LoggerInstance.LogDebug($"Spawning {num} items in level");
                     for (int i = 0; i < num; i++) // spawn items in level based on config for min and max items to spawn
                     {
